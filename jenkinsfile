@@ -1,0 +1,73 @@
+pipeline {
+    agent {
+        label 'jenkins-slave'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/moranelb/super-app.git', branch: 'main', credentialsId: 'github-creds'
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    // Build Docker images
+                    sh '/usr/local/bin/docker-compose build'
+                }
+            }
+        }
+
+        stage('Tag Docker Images') {
+            steps {
+                script {
+                    // Tag the Docker images with your Docker Hub username and a version (e.g., 'latest')
+                    sh 'docker tag super-app-pipeline-node moranelb/super-app-pipeline-node:latest'
+                    sh 'docker tag super-app-pipeline-php moranelb/super-app-pipeline-php:latest'
+                }
+            }
+        }
+
+        stage('Test Application') {
+            steps {
+                script {
+                    // Run Docker Compose
+                    sh '/usr/local/bin/docker-compose up -d'
+
+                    // Add your test commands here
+                    sleep(10) // wait for the containers to start
+
+                    // Test PHP app
+                    sh 'curl -f http://10.0.0.28:80'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Log in to Docker Hub
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                    }
+
+                    // Push the tagged images
+                    sh 'docker push moranelb/super-app-pipeline-node:latest'
+                    sh 'docker push moranelb/super-app-pipeline-php:latest'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Clean up Docker containers and workspace after the pipeline run
+                sh '/usr/local/bin/docker-compose down'
+                cleanWs()
+            }
+        }
+    }
+}
