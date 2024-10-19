@@ -35,10 +35,13 @@ pipeline {
 
                     // Add your test commands here
                     sleep(10) // wait for the containers to start
-                    sh 'docker ps'
+                    
+                    sh 'ls -l /opt/tomcat/.jenkins/workspace/super-app-project/php'
+                    sh 'chmod -R 755 /opt/tomcat/.jenkins/workspace/super-app-project/php'
 
                     // Test PHP app
-                    sh 'curl -f http://127.0.0.1:80'
+                    sh 'curl http://localhost:3000/super-app'
+                    sh 'curl -f http://localhost:80'
                 }
             }
         }
