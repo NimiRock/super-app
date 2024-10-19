@@ -1,13 +1,10 @@
 pipeline {
-    agent {
-        label 'jenkins-slave'
-    }
+    agent any
 
     stages {
-
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/moranelb/super-app.git', branch: 'main', credentialsId: 'github-creds'
+                git credentialsId: 'github-creds', url: 'https://github.com/NimiRock/super-app.git', branch: 'main'
             }
         }
 
@@ -15,7 +12,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker images
-                    sh '/usr/local/bin/docker-compose build'
+                    sh 'docker-compose build'
                 }
             }
         }
@@ -24,8 +21,8 @@ pipeline {
             steps {
                 script {
                     // Tag the Docker images with your Docker Hub username and a version (e.g., 'latest')
-                    sh 'docker tag super-app-pipeline-node moranelb/super-app-pipeline-node:latest'
-                    sh 'docker tag super-app-pipeline-php moranelb/super-app-pipeline-php:latest'
+                    sh 'docker tag super-app-jenkins-node nimirockdev/super-app-jenkins-node:latest'
+                    sh 'docker tag super-app-jenkins-php nimirockdev/super-app-jenkins-php:latest'
                 }
             }
         }
@@ -49,13 +46,13 @@ pipeline {
             steps {
                 script {
                     // Log in to Docker Hub
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                     }
 
                     // Push the tagged images
-                    sh 'docker push moranelb/super-app-pipeline-node:latest'
-                    sh 'docker push moranelb/super-app-pipeline-php:latest'
+                    sh 'docker push nimirockdev/super-app-jenkins-node:latest'
+                    sh 'docker push nimirockdev/super-app-jenkins-php:latest'
                 }
             }
         }
