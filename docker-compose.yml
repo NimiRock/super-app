@@ -11,6 +11,7 @@ services:
 
   node:
     image: super-app-jenkins-node
+    container_name: super-app-jenkins-node
     build:
       context: ./node
     ports:
@@ -20,6 +21,7 @@ services:
 
   php:
     image: super-app-jenkins-php
+    container_name: super-app-jenkins-php
     build:
       context: ./php
     ports:
