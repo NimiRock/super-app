@@ -31,13 +31,14 @@ pipeline {
             steps {
                 script {
                     // Run Docker Compose
-                    sh '/usr/local/bin/docker-compose up -d'
+                    sh 'docker-compose up -d'
 
                     // Add your test commands here
                     sleep(10) // wait for the containers to start
+                    sh 'docker ps'
 
                     // Test PHP app
-                    sh 'curl -f http://10.0.0.28:80'
+                    sh 'curl -f http://127.0.0.1:80'
                 }
             }
         }
@@ -62,7 +63,7 @@ pipeline {
         always {
             script {
                 // Clean up Docker containers and workspace after the pipeline run
-                sh '/usr/local/bin/docker-compose down'
+                sh 'docker-compose down'
                 cleanWs()
             }
         }
