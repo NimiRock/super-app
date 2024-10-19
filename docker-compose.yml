@@ -34,9 +34,9 @@ services:
       app-network:
         ipv4_address: 172.28.1.2
 
-  networks:
-    app-network:
-      driver: bridge
+networks:
+  app-network:
+    driver: bridge
       ipam:
         config:
           - subnet: 172.28.1.0/24
